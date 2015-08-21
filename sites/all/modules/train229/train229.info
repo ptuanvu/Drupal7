@@ -1,0 +1,4 @@
+name = Train 229
+description = Defining custom field types, using entity reference
+core = 7.x
+package = Training

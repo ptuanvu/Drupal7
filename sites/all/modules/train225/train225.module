@@ -1,0 +1,22 @@
+<?php
+
+function train225_menu() {
+  $items['train225/form'] = array(
+    'title' => 'TRAIN 225 FORM',
+    'description' => 'Train 225 form by Tuan Vu',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('form_train225_startform'),
+    'access callback' => TRUE,
+    'file' => 'train_form_content.inc',
+  );
+  
+  $items['train225/autocomplete'] = array(
+    'title' => 'Auto complete',
+    'description' => 'Train 225 autocomplete country',
+    'page callback' => 'respone_matched_countries',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'file' => 'train_form_content.inc',
+  );
+  return $items;
+}

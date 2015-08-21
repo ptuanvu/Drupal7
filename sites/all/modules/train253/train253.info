@@ -1,0 +1,5 @@
+name = Train 253 - File API
+description = Working with file API - AmazonS3
+core = 7.x
+package = Trains
+configure = admin/config/file_api_training

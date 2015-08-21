@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function train221_menu() {
+  $items['information/%'] = array(
+      'title' => 'Phan Vu',
+      'description' => 'To show information of page',
+      'page arguments' => array(1),
+      'page callback' => 'redirect_to_page',
+      'access arguments' => array('access content'),
+      'context' => MENU_CONTEXT_PAGE,
+      'position' => 'left',
+      'type' => MENU_CALLBACK,
+    );
+  return $items;
+}
+
+function redirect_to_page($name_node) {
+  drupal_goto('shirts/' . $name_node);
+}
+
+
+
+
+
+

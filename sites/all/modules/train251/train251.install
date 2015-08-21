@@ -1,0 +1,12 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: monster
+ * Date: 21/08/2015
+ * Time: 10:39
+ */
+
+function train251_schema() {
+  $schema['cached_subscription_rest_package'] = drupal_get_schema_unprocessed('system', 'cache');
+  return $schema;
+}

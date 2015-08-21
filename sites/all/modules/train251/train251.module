@@ -1,0 +1,680 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: monster
+ * Date: 14/08/2015
+ * Time: 12:07
+ */
+
+/**
+ * Implements hook_entity_info().
+ */
+function train251_entity_info()
+{
+  $info['subscription_rest_package'] = array(
+    'label' => t('Subscription Rest Package Entity'),
+    'controller class' => 'SubscriptionRestPackageController',
+    'label callback' => 'subscription_rest_package_generate_label',
+    'fieldable' => FALSE,
+//    'access callback' => 'subscription_rest_pakage_access_callback',
+    'uri callback' => 'subscription_rest_package_uri_callback',
+    'entity keys' => array(
+      'id' => 'id',
+      'label' => 'name',
+    ),
+    'bundles' => array(),
+    'view modes' => array(
+      'full' => array(
+        'label' => t('Full'),
+        'custom settings' => TRUE,
+      ),
+    ),
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function train251_menu()
+{
+  $items = array();
+
+  $items['subscription_rest_package/add'] = array(
+    'title' => 'Add new | Subcription Rest Package',
+    'description' => 'To add a subcription rest package object',
+    'page callback' => 'subscription_rest_package_add_object',
+    'access callback' => TRUE,
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+  );
+
+  $items['subscription_rest_package'] = array(
+    'title' => 'List | Subscription Rest Package',
+    'page callback' => 'subscription_rest_package_list_entities',
+    'access callback' => TRUE,
+  );
+
+  $items['subscription_rest_package/list'] = array(
+    'title' => 'List | Subscription Rest Package',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  $items['subscription_rest_package/%subscription_rest_package/edit'] = array(
+    'title' => 'Edit | Subscription Rest Package',
+    'description' => 'To edit a subscription rest package object',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('subscription_rest_package_form', 1),
+    'access callback' => TRUE,
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+  );
+
+  $items['subscription_rest_package/%subscription_rest_package/view'] = array(
+    'title' => 'View | Subscription Rest Package',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  $items['subscription_rest_package/%subscription_rest_package'] = array(
+//    'title' => 'View | Subscription Rest Package',
+    'page callback' => 'subscription_rest_package_view',
+    'title callback' => 'subscription_title_callback_function',
+    'title arguments' => array(1),
+    'page arguments' => array(1),
+    'access callback' => TRUE,
+  );
+
+
+
+  return $items;
+}
+
+
+function subscription_rest_package_list_entities() {
+  $content = array();
+
+  $entities = subscription_rest_package_load_multiple();
+  $rows = array();
+
+  if (!empty($entities)) {
+    foreach($entities as $entity) {
+      $rows[] = array(
+        'data' => array(
+          'id' => $entity->id,
+          'code' => $entity->code,
+          'name' => l($entity->name, '/subscription_rest_package/' . $entity->id . '/view'),
+          'amount' => $entity->amount,
+          'month' => $entity->month,
+          'telco' => $entity->telco,
+          'status' => $entity->status,
+          'sms_code' => $entity->sms_code,
+          'created_at' => $entity->created_at,
+          'updated_at' => isset($entity->updated_at) ? $entity->updated_at : '',
+          'edit' => l('Edit', '/subscription_rest_package/' . $entity->id . '/edit'),
+        ),
+      );
+    }
+  }
+
+  $headers = array(t('ID'), t('Code'), t('Name'), t('Amount'), t('Month'), t('Telco'), t('Status'), t('Sms code'), t('Created At'), t('Updated At'), t('Options'));
+
+  $content['entity_table'] = array(
+    '#theme' => 'table',
+    '#rows' => $rows,
+    '#header' =>$headers,
+  );
+
+  return $content;
+}
+
+function subscription_rest_package_view($entity, $view_mode = 'full') {
+  $entity->content = array(
+    '#view_mode' => $view_mode,
+  );
+
+  $entity->content['id'] = array(
+    '#type' => 'item',
+    '#title' => t('ID'),
+    '#markup' => $entity->id,
+  );
+
+  $entity->content['code'] = array(
+    '#type' => 'item',
+    '#title' => t('Code'),
+    '#markup' => $entity->code,
+  );
+
+  $entity->content['name'] = array(
+    '#type' => 'item',
+    '#title' => t('Name'),
+    '#markup' => $entity->name,
+  );
+
+  $entity->content['amount'] = array(
+    '#type' => 'item',
+    '#title' => t('Amount'),
+    '#markup' => $entity->amount,
+  );
+
+  $entity->content['month'] = array(
+    '#type' => 'item',
+    '#title' => t('Month'),
+    '#markup' => $entity->month,
+  );
+
+  $entity->content['telco'] = array(
+    '#type' => 'item',
+    '#title' => t('Telco'),
+    '#markup' => $entity->telco,
+  );
+
+  $entity->content['status'] = array(
+    '#type' => 'item',
+    '#title' => t('Status'),
+    '#markup' => $entity->status,
+  );
+
+  $entity->content['sms_code'] = array(
+    '#type' => 'item',
+    '#title' => t('Sms code'),
+    '#markup' => $entity->sms_code,
+  );
+
+  $entity->content['create_at'] = array(
+    '#type' => 'item',
+    '#title' => t('Create at'),
+    '#markup' => $entity->created_at,
+  );
+
+  $entity->content['update_at'] = array(
+    '#type' => 'item',
+    '#title' => t('Update at'),
+    '#markup' => $entity->updated_at,
+  );
+
+  global $language;
+  $langcode = $language->language;
+
+  return $entity->content;
+}
+
+function subscription_rest_package_add_object()
+{
+  $entity = entity_create('subscription_rest_package', array());
+  return drupal_get_form('subscription_rest_package_form', $entity);
+}
+
+function subscription_rest_package_form($form, $form_state, $entity = NULL)
+{
+  $form['field_code'] = array(
+    '#type' => 'fieldset',
+    '#prefix' => '<div id="field-code-wrapper">',
+    '#suffix' => '</div>',
+  );
+
+  //Auto create for field code
+  if (!empty($form_state['values']['amount']) && !empty($form_state['values']['month']) && empty($entity->code)) {
+    $result = sprintf('%03d', $form_state['values']['amount']) . sprintf('%02d', $form_state['values']['month']);
+  } else if (!empty($entity->code)) {
+    $result = $entity->code;
+  } else {
+    $result = '';
+  }
+
+  $form['field_code']['code'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Code',
+    '#description' => 'Enter subscription rest package code',
+    '#size' => 10,
+    '#maxlength' => 10,
+    '#disabled' => TRUE,
+  );
+
+  if (!empty($result)) {
+    $form['field_code']['code']['#value'] = $result;
+  }
+
+  //Check field amount, month isset -> to use them to create field sms value
+  if (!empty($form_state['values']['amount']) && !empty($form_state['values']['month']) && empty($entity->sms_code)) {
+    $smscode_value = sprintf('%03d', $form_state['values']['amount']) . sprintf('%02d', $form_state['values']['month']);
+  } else if (!empty($entity->sms_code)) {
+    $smscode_value = $entity->sms_code;
+  } else {
+    $smscode_value = '';
+  }
+
+  $form['field_code']['sms_code'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Sms Code',
+    '#size' => 30,
+    '#maxlength' => 30,
+    '#disabled' => TRUE,
+    '#default_value' => $smscode_value,
+  );
+
+
+  if (!empty($entity->name)) {
+    $name_value = $entity->name;
+  } else if (isset($form_state['values']['name'])) {
+    $name_value = $form_state['values']['name'];
+  } else {
+    $name_value = '';
+  }
+
+  $form['field_code']['name'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Name',
+    '#description' => 'Enter subscription rest package name : Gói nạp tiền + Amount + Month + Telco',
+    '#size' => 60,
+    '#maxlength' => 255,
+    '#required' => TRUE,
+    '#default_value' => $name_value,
+  );
+
+  if (isset($form_state['values']['auto_generate_name']) && $form_state['values']['auto_generate_name'] == 'True') {
+    if (!empty($form_state['values']['amount']) && !empty($form_state['values']['month']) && empty($entity->name)) {
+      $form['field_code']['name']['#value'] = 'Gói nạp tiền ' . (int)$form_state['values']['amount'] . '000/' . $form_state['values']['month'];
+    }
+    $form['field_code']['name']['#disabled'] = TRUE;
+  }
+
+  $form['auto_generate_name'] = array(
+    '#type' => 'radios',
+    '#description' => 'Check this if you want to auto generate name value',
+    '#options' => drupal_map_assoc(array('true' => 'True', 'false' => 'False')),
+    '#default_value' => isset($form_state['values']['auto_generate_name']) ? $form_state['values']['auto_generate_name'] : 'True',
+    '#ajax' => array(
+      'wrapper' => 'field-code-wrapper',
+      'callback' => 'ajax_auto_generate_options',
+      'event' => 'change',
+    ),
+  );
+
+  $form['amount'] = array(
+    '#type' => 'select',
+    '#title' => 'Amount',
+    '#description' => 'Select subscription rest package amount NUMBER',
+    '#required' => TRUE,
+    '#options' => drupal_map_assoc(array('10' => '010', '20' => '020', '30' => '030', '50' => '050', '100' => '100',
+      '200' => '200', '500' => '500')),
+    '#default_value' => isset($entity->amount) ? substr($entity->amount, 0, -3) : '10',
+    '#ajax' => array(
+      'wrapper' => 'field-code-wrapper',
+      'callback' => 'ajax_auto_generate_options',
+      'event' => 'change',
+    ),
+  );
+
+  $values = array();
+  for ($i = 1; $i <= 24; $i++) {
+    $values[$i] = $i;
+  }
+
+  $form['month'] = array(
+    '#type' => 'select',
+    '#title' => 'Month',
+    '#description' => 'Select subscription rest package month NUMBER',
+    '#required' => TRUE,
+    '#options' => drupal_map_assoc($values),
+    '#default_value' => isset($entity->month) ? $entity->month : '1',
+    '#ajax' => array(
+      'wrapper' => 'field-code-wrapper',
+      'callback' => 'ajax_auto_generate_options',
+      'event' => 'change',
+    ),
+  );
+
+  if (!empty($entity->id)) {
+    $form['field_code']['sms_code']['#disabled'] = FALSE;
+    $form['amount']['#disabled'] = TRUE;
+    $form['month']['#disabled'] = TRUE;
+  }
+
+  if (isset($entity->telco)) {
+    switch ($entity->telco) {
+      case 'VTEL' :
+        $telco_value = 'Viettel';
+        break;
+      case 'VINA' :
+        $telco_value = 'Vinaphone';
+        break;
+      case 'MOBI' :
+        $telco_value = 'Mobifone';
+        break;
+    }
+  }
+
+  $form['telco'] = array(
+    '#type' => 'checkboxes',
+    '#title' => 'Telco',
+    '#required' => TRUE,
+    '#options' => drupal_map_assoc(array(
+      'MOBI' => 'Mobifone',
+      'VTEL' => 'Viettel',
+      'VINA' => 'Vinaphone'
+    )),
+    '#default_value' => isset($telco_value) ? array($telco_value) : array(),
+  );
+
+  $form['status'] = array(
+    '#type' => 'radios',
+    '#title' => 'Package Status',
+    '#options' => array(
+      'enabled' => 'Enable',
+      'disabled' => 'Disable',
+    ),
+    '#default_value' => !empty($entity->status) ? $entity->status : 'enabled',
+  );
+
+  $form['basic_entity'] = array(
+    '#type' => 'value',
+    '#value' => $entity,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Save',
+  );
+
+  return $form;
+}
+
+function subscription_rest_package_form_validate($form, &$form_state)
+{
+  $entity = $form_state['values']['basic_entity'];
+  if (!empty($entity->id)) {
+    $telcos = $form_state['values']['telco'];
+
+    $count = 0;
+
+    foreach ($telcos as $telco) {
+      if ($telco != '0') {
+        $count++;
+      }
+    }
+
+    if ($count > 1) {
+      form_set_error('telco]', t("Don't put more than one value in telco field in edit mode."));
+    }
+  }
+}
+
+function subscription_rest_package_form_submit($form, &$form_state)
+{
+  $entity = $form_state['values']['basic_entity'];
+  $entity->code = $form_state['values']['code'];
+  $entity->name = $form_state['values']['name'];
+  $entity->amount = (int)$form_state['values']['amount'];
+  $entity->month = $form_state['values']['month'];
+  $entity->telco = $form_state['values']['telco'];
+  $entity->status = $form_state['values']['status'];
+  $entity->sms_code = $form_state['values']['sms_code'];
+  $entity->create_at = time();
+
+
+  $result = entity_save('subscription_rest_package', $entity);
+  if ($result == 'SUCCESS') {
+    drupal_set_message($result);
+  } else {
+    drupal_set_message($result);
+  }
+}
+
+function ajax_auto_generate_options($form, $form_state)
+{
+  return $form['field_code'];
+}
+
+function subscription_rest_package_load($id = NULL, $reset = FALSE)
+{
+  $ids = (isset($id) ? array($id) : array());
+  $result = subscription_rest_package_load_multiple($ids, array(), $reset);
+  return $result ? reset($result) : FALSE;
+}
+
+function subscription_rest_package_load_multiple($ids = FALSE, $conditions = array(), $reset = FALSE)
+{
+  return entity_load('subscription_rest_package', $ids, $conditions, $reset);
+}
+
+function subscription_title_callback_function($entity) {
+  return !empty($entity->name) ? $entity->name : '';
+}
+/**
+ * Implements hook_views_api().
+ */
+function train251_views_api()
+{
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'train251') . '/includes/views',
+  );
+}
+
+/**
+ * Implements hook_views_plugins().
+ */
+function train251_views_plugins()
+{
+  //Views/includes/plugins.inc line 260
+  $plugin = array();
+  $plugin['query']['subscription_rest_package_plugin_query'] = array(
+    'title' => t('Subscription Rest Package'),
+    'help' => t('Subscription Rest Package Help'),
+    'handler' => 'subscription_rest_package_plugin_query',
+  );
+  return $plugin;
+}
+
+function subscription_rest_package_generate_label($entity, $entity_type)
+{
+  return isset($entity) ? $entity->name : 'Subscription Rest Package Object';
+}
+
+function subscription_rest_package_uri_callback($entity)
+{
+  return array(
+    'path' => 'subcription_rest_package/' . $entity->id . '/view',
+  );
+}
+
+interface SubscriptionRestPackageInterface extends EntityAPIControllerInterface
+{
+  public function subscription_generate_data($entity);
+}
+
+class SubscriptionRestPackageController extends EntityAPIController implements SubscriptionRestPackageInterface
+{
+
+  public function create(array $values = array())
+  {
+    $values = array_merge($values, array(
+      'id' => 0,
+      'code' => '',
+      'name' => '',
+      'amount' => '',
+      'month' => '',
+//      'telco' => '',
+      'status' => '',
+      'sms_code' => '',
+//      'created_at' => REQUEST_TIME,
+//      'updated_at' => REQUEST_TIME,
+    ));
+    return parent::create($values);
+  }
+
+  public function load($ids = array(), $conditions = array())
+  {
+    $entities = array();
+
+    $revision_id = FALSE;
+
+    $passed_ids = !empty($ids) ? array_flip($ids) : FALSE;
+
+    if ($this->cache && !$revision_id) {
+      $entities = $this->cacheGet($ids, $conditions);
+      // If any entities were loaded, remove them from the ids still to load.
+      if ($passed_ids) {
+        $ids = array_keys(array_diff_key($passed_ids, $entities));
+      }
+    }
+
+    // Support the entitycache module if activated.
+    if (!empty($this->entityInfo['entity cache']) && !$revision_id && $ids && !$conditions) {
+      $cached_entities = EntityCacheControllerHelper::entityCacheGet($this, $ids, $conditions);
+      // If any entities were loaded, remove them from the ids still to load.
+      $ids = array_diff($ids, array_keys($cached_entities));
+      $entities += $cached_entities;
+
+      // Add loaded entities to the static cache if we are not loading a
+      // revision.
+      if ($this->cache && !empty($cached_entities) && !$revision_id) {
+        $this->cacheSet($cached_entities);
+      }
+    }
+
+    if (!($this->cacheComplete && $ids === FALSE && !$conditions) && ($ids === FALSE || $ids || $revision_id)) {
+      $queried_entities = array();
+
+      $url = 'http://localhost:8181/subscription-rest/package/search';
+      $headers = array();
+
+
+
+      if (empty($ids)) {
+        $options = array(
+          'method' => 'POST',
+          'data' => '{}',
+          'headers' => $headers,
+        );
+        $respone = drupal_http_request($url, $options);
+        if ($respone->code == 200) {
+          $result = json_decode($respone->data);
+        }
+      } else {
+        foreach ($ids as $id) {
+          $filter = array('id' => $id,);
+          $options = array(
+            'method' => 'POST',
+            'data' => !empty($filter) ? json_encode($filter) : '{}',
+            'headers' => $headers,
+          );
+          $respone = drupal_http_request($url, $options);
+          if ($respone->code == 200) {
+            $result = json_decode($respone->data);
+
+            if (isset($entities[$result->list[0]->{$this->idKey}])) {
+              continue;
+            }
+          }
+        }
+      }
+      foreach ($result->list as $row) {
+        $queried_entities[$row->id] = $row;
+      }
+    }
+
+    if (!empty($queried_entities)) {
+      $this->attachLoad($queried_entities, $revision_id);
+      $entities += $queried_entities;
+    }
+
+    // not loading a revision.
+    if (!empty($this->entityInfo['entity cache']) && !empty($queried_entities) && !$revision_id) {
+      EntityCacheControllerHelper::entityCacheSet($this, $queried_entities);
+    }
+
+    if ($this->cache) {
+      // Add entities to the cache if we are not loading a revision.
+      if (!empty($queried_entities) && !$revision_id) {
+        $this->cacheSet($queried_entities);
+
+        // Remember if we have cached all entities now.
+        if (!$conditions && $ids === FALSE) {
+          $this->cacheComplete = TRUE;
+        }
+      }
+    }
+
+    if ($passed_ids && $passed_ids = array_intersect_key($passed_ids, $entities)) {
+      foreach ($passed_ids as $id => $value) {
+        $passed_ids[$id] = $entities[$id];
+      }
+      $entities = $passed_ids;
+    }
+    return $entities;
+  }
+
+  public function subscription_generate_data($entity)
+  {
+    $result = array();
+
+    foreach ($entity->telco as $key => $item) {
+      if ($item != '0') {
+        $row = array();
+        switch ($item) {
+          case 'Viettel' :
+            $row['telco'] = 'VTEL';
+            break;
+          case 'Mobifone' :
+            $row['telco'] = 'MOBI';
+            break;
+          case 'Vinaphone' :
+            $row['telco'] = 'VINA';
+            break;
+        }
+
+        if (!empty($entity->id)) {
+          $row['id'] = $entity->id;
+          $row['name'] = $entity->name;
+          $row['code'] = $entity->code;
+          $row['sms_code'] = $entity->sms_code;
+        } else {
+          $row['name'] = $entity->name . ' ' . $item;
+          $row['code'] = $row['telco'] . $entity->code;
+
+          $row['sms_code'] = $row['telco'] . ' ' . $entity->sms_code;
+        }
+
+        $row['amount'] = $entity->amount . '000';
+        $row['month'] = $entity->month;
+        $row['status'] = $entity->status;
+        $result[] = $row;
+      }
+    }
+
+    return $result;
+  }
+
+  public function save($entity, DatabaseTransaction $transaction = NULL)
+  {
+    $url = 'http://localhost:8181/subscription-rest/package/save';
+    $data = entity_get_controller('subscription_rest_package')->subscription_generate_data($entity);
+    $headers = array();
+    $respone_code = '';
+    foreach ($data as $data_item) {
+      $options = array(
+        'method' => 'POST',
+        'data' => (!empty($data_item)) ? json_encode($data_item) : '{}',
+        'headers' => $headers,
+      );
+
+      $respone = drupal_http_request($url, $options);
+
+      if ($respone->code == 200) {
+        if (empty($entity->id)) {
+          $respone_code .= 'Create subscription package name : ' . $data_item['name'] . ' done </br>';
+        } else {
+          $respone_code .= 'Save subscription package name : ' . $data_item['name'] . ' done </br>';
+        }
+      } else {
+        $respone_code .= 'Create subscription package name : ' . $data_item['name'] . ' failed </br>';
+      }
+    }
+
+    return $respone_code;
+  }
+}

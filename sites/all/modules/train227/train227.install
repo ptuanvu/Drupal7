@@ -1,0 +1,265 @@
+<?php
+
+
+
+function train227_schema() {
+  
+  $schema['employee'] = array(
+    'description' => 'This table to save employee data for train 227',
+    'fields' => array(
+      'eid' => array(
+        'description' => 'The primary indentifier for a employee.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'employee_id' => array(
+        'description' => 'The employee ID',
+        'type' => 'varchar',
+        'length' => 60,
+        'not null' => FALSE,
+        'default' => '',
+      ),
+      'fullname' => array(
+        'description' => 'Name of employee',
+        'type' => 'varchar',
+        'length' => 60,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'dayofbirth' => array(
+        'description' => 'Birthday of employee',
+        'type' => 'varchar',
+        'length' => 60,
+        'mysql_type' => 'DATETIME',
+        'not null' => FALSE,
+      ),
+      'gender' => array(
+        'description' => 'Birthday.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the node was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'type' => array(
+        'description' => 'The bundle of this node.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'data' => array(
+        'description' => 'Store extras data',
+        'type' => 'blob',
+      ),
+      'uid' => array(
+        'description' => 'Creator user',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+    ),
+    'indexes' => array(
+      'employee_id' => array('employee_id'),
+    ),
+    'foreign keys' => array(
+      'created_user' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+    'primary key' => array('eid'),
+  );
+  
+  return $schema;
+}
+
+function train227_install() {
+  $e1 = entity_create('employee', array('type' => 'mbv'));
+  $e1->employee_id = 'Install001';
+  $e1->fullname = 'Auto generate when install';
+  $e1->dayofbirth = '2015-07-10 00:00:00';
+  $e1->gender = 'male';
+  $e1->type = 'mbv';
+  $e1->created = REQUEST_TIME;
+
+
+  $e2 = entity_create('employee', array('type' => 'mbv'));
+  $e2->employee_id = 'Install002';
+  $e2->fullname = 'Auto generate when install';
+  $e2->dayofbirth = '2015-05-10 00:00:00';
+  $e2->gender = 'female';
+  $e2->type = 'mbv';
+  $e2->created = REQUEST_TIME;
+
+  entity_save('employee' ,$e1);
+  entity_save('employee' ,$e2);
+
+  $sql = "SELECT * FROM users";
+  $usernames = db_query($sql);
+
+  $users = array();
+  $number = 0;
+  foreach ($usernames->fetchAll() as $key => $user) {
+    if (!empty($user->name)) {
+      $users[] = $user->uid;
+      $number++ ;
+      watchdog('TRAIN227', 'Username : @username - UserID : @user_id - Number : @number', array('@username' => $user->name, '@user_id' => $user->uid, '@number' => $number));
+    }
+  }
+
+  for($i = 0 ; $i < 100; $i++) {
+    $tmp = entity_create('employee', array('type' => 'mbv'));
+    $tmp->employee_id = RandomString();
+    $tmp->fullname = 'Auto generate ' . RandomString();
+    $tmp->dayofbirth = '2015-05-10 00:00:00';
+    $tmp->gender = 'female';
+    $tmp->type = 'mbv';
+    $tmp->created = REQUEST_TIME;
+    $user_id = $users[rand(0, $number-1)];
+    $tmp->uid = $user_id;
+
+    entity_save('employee', $tmp);
+  }
+
+}
+
+function RandomString()
+{
+  $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $result = '';
+    for ($i = 0; $i < 10; $i++) {
+      $result .= $characters[rand(0, strlen($characters))];
+    }
+
+  if (rand(0, 5) == 2) {
+    return '';
+  }
+    return $result;
+}
+
+function train227_uninstall() {
+
+  $sql = "SELECT * FROM field_config_instance fci WHERE fci.entity_type='employee'";
+
+  $result = db_query($sql);
+
+  foreach ($result->fetchAll() as $key => $item) {
+      $field_name = $item->field_name;
+      $table_name = 'field_data_' . $field_name;
+      $sql = "DELETE FROM field_config_instance WHERE field_name='" . $field_name . "'";
+      db_query($sql);
+
+      $sql = "DROP TABLE " . $table_name;
+      db_query($sql);
+
+      $sql = "DROP TABLE field_revision_" . $field_name;
+      db_query($sql);
+
+      $sql = "DELETE FROM field_config WHERE field_name='" . $field_name . "'";
+      db_query($sql);
+  }
+//  $sql2 = "DELETE FROM field_config_instance WHERE entity_type = 'employee'";
+//  db_query($sql2);
+//  $instances = field_info_instance('employee', 'mbv');
+
+
+
+//  $bundles = field_info_bundles('employee');
+//
+//  foreach($bundles as $key => $bundle) {
+//    $instances = field_info_instances('employee', $key);
+//    foreach ($instances as $keyi => $instance) {
+//      $field_name = $keyi;
+//      $table_name = 'field_data_' . $field_name;
+//      $sql = "DELETE FROM field_config_instance WHERE field_name='" . $field_name . "'";
+//      db_query($sql);
+//
+//      $sql = "DROP TABLE " . $table_name;
+//      db_query($sql);
+//
+//      $sql = "DROP TABLE field_revision_" . $field_name;
+//      db_query($sql);
+//
+//      $sql = "DELETE FROM field_config WHERE field_name='" . $field_name . "'";
+//      db_query($sql);
+//
+//      //delete_field_mod($keyi);
+//      //field_delete_instance($instance);
+//    }
+//  }
+
+  //field_delete_field('identity_card_mbv');
+}
+
+/**
+ * Implements hook_enable().
+ */
+function train227_enable()
+{
+  if (!field_info_field('identity_card_mbv')) {
+    $field = array(
+      'field_name' => 'identity_card_mbv',
+      'type' => 'identity_card',
+    );
+
+    field_create_field($field);
+
+    $instance = array(
+      'field_name' => 'identity_card_mbv',
+      'entity_type' => 'employee',
+      'label' => t('Identity Card'),
+      'bundle' => 'mbv',
+      'required' => TRUE,
+      'widget' => array(
+        'type' => 'identity_card_standard',
+      ),
+    );
+
+    field_create_instance($instance);
+
+
+  }
+}
+//
+//function train227_update_7000() {
+//  watchdog('Update test', 'Update 7000 processing');
+//}
+//
+//function train227_update_7001() {
+//  watchdog('Update test', 'Update 7001 processing');
+//}
+//
+//function train227_update_7002() {
+//  watchdog('Update test', 'Update 7002 processing');
+//}
+//
+//function train227_update_7005() {
+//  watchdog('Update test', 'Update 7005 processing');
+//}
+//
+//function train227_update_7004() {
+//  watchdog('Update test', 'Update 7004 processing');
+//}
+//
+//function train227_update_7003() {
+//  watchdog('Update test', 'Update 7003 processing');
+//}
+//
+//function train227_update_7103() {
+//  watchdog('Update test', 'Update 7103 processing');
+//}
+//
+//function train227_update_7102() {
+//  watchdog('Update test', 'Update 7102 processing');
+//}
+//
+//function train227_update_7202() {
+//  watchdog('Update test', 'Update 7202 processing');
+//}

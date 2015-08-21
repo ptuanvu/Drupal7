@@ -1,0 +1,6 @@
+name = Train 226
+description = Drupal Train 226 - Hook_form_after and multi step form
+core = 7.x
+package = Others
+version = 1.0
+

@@ -1,0 +1,147 @@
+<?php
+
+function mongooses_views_data() {
+    $data['mongooses']['table']['group'] = t('Mongooses');
+    $data['mongooses']['table']['base'] = array(
+        'field' => 'id',
+        'title' => t('Mongoose Sightings'),
+    );
+    $data['mongooses']['id'] = array(
+        'title' => 'Sighting ID',
+        'help' => 'Unique ID associated to each mongoose sighting',
+        'field' => array(
+            'handler' => 'views_handler_field'
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort'
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter'
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument'
+        ),
+    );
+    $data['mongooses']['sighting_date'] = array(
+        'title' => 'Sighting date',
+        'help' => 'The date the mongoose was sighted',
+        'field' => array(
+            'handler' => 'views_handler_field_date'
+        ),
+    );
+    $data['mongooses']['description'] = array(
+        'title' => 'Description',
+        'help' => 'Description of the mongoose sighting',
+        'field' => array(
+            'handler' => 'views_handler_field'
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort'
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string'
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_string'
+        ),
+    );
+    $data['mongooses']['place_name'] = array(
+        'title' => 'Place',
+        'help' => 'Name of the place where the mongoose was sighted',
+        'field' => array(
+            'handler' => 'views_handler_field'
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort'
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string'
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_string'
+        ),
+    );
+    $data['mongooses']['uid'] = array(
+        'title' => 'UID',
+        'help' => 'UID of the user who sighted the mongoose',
+        'field' => array(
+            'handler' => 'views_handler_field'
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort'
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter'
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument'
+        ),
+        'relationship' => array(
+            'title' => t('Mongoose Sighter'),
+        'help' => t('Relate mongoose sightings to the users who sighted them.'),
+        'handler' => 'views_handler_relationship',
+        'base' => 'users',
+        'field' => 'uid',
+        'label' => t('mongoose-sighter'),
+    ),
+);
+    $data['mongooses']['scientific_name'] = array(
+        'title' => 'Scientific Name',
+        'help' => 'Scientific name of the mongoose',
+        'field' => array(
+            'handler' => 'views_handler_field'
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort'
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string'
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_string'
+        ),
+    );
+    $data['mongooses']['common_name'] = array(
+        'title' => 'Common Name',
+        'help' => 'Common name of the mongoose',
+        'field' => array(
+            'handler' => 'views_handler_field'
+        ),
+        'sort' => array(
+            'handler' => 'views_handler_sort'
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string'
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_string'
+        ),
+    );
+    $data['mongooses']['url'] = array(
+        'title' => 'URL',
+        'help' => 'URL of the mongoose sighting listing',
+        'field' => array(
+            'handler' => 'views_handler_field_url'
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string'
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_string'
+        ),
+    );
+    $data['mongooses']['image_url'] = array(
+        'title' => 'Image URL',
+        'help' => 'URL of an image of the mongoose',
+        'field' => array(
+            'handler' => 'views_handler_field_url'
+        ),
+        'filter' => array(
+            'handler' => 'views_handler_filter_string'
+        ),
+        'argument' => array(
+            'handler' => 'views_handler_argument_string'
+        ),
+    );
+    return $data;
+}

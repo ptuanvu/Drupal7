@@ -1,0 +1,15 @@
+name = train227
+description = Train 227 Use of hook_schema and Entity API to manipulate data
+core = 7.x
+package = Others
+version = 1.0
+configure = admin/config/employee
+dependencies[] = field
+dependencies[] = entity
+dependencies[] = views
+dependencies[] = train229
+files[] = train227.controller.inc
+files[] = train227.cron.inc
+files[] = train227.entityreference.inc
+files[] = train227.entitytype.inc
+files[] = includes/views/handlers/employee_field_handler.inc

@@ -1,0 +1,201 @@
+<?php
+
+function train226_form_alter(&$form, $form_state, $form_id) {
+  //dsm($form_id);
+  
+  if ($form_id == 'views_exposed_form') {
+    
+    $form['submit']['#attributes'] = array(
+      'style' => 'background-image: url("https://cdn3.iconfinder.com/data/icons/google-material-design-icons/48/ic_search_48px-128.png");background-size: contain;',
+    );
+  }
+}
+
+function train226_form_user_login_alter(&$form, $form_state, $form_id) {
+  drupal_set_message($form_id);
+  $form['type_login'] = array(
+    '#type' => 'radios',
+    '#options' => array(
+      'Username' => t('Username'),
+      'Email' => t('Email'),
+    ),
+    '#default_value' => 'Username',
+    '#description' => 'Select your type login',
+  );
+  
+  $form['email'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Email',
+    '#size' => 60,
+    '#required' => FALSE,
+    '#maxlength' => 60,
+    '#description' => 'Enter your Commerce Kickstart email',
+    '#states' => array(
+      'visible' => array(
+        'input[name="type_login"]' => array('value' => t('Email')),
+      ),
+    ),
+    '#weight' => 0,
+  );
+  
+  $form['name']['#states'] = array(
+    'visible' => array(
+        'input[name="type_login"]' => array('value' => t('Username')),
+      ),
+  );
+  $form['name']['#required'] = FALSE;
+  
+      // your validation function must run first.
+  array_unshift($form['#validate'],'train226_user_login_validate');
+}
+
+function train226_user_login_validate($form, &$form_state) {
+  $form['name']['#required'] = FALSE;
+  if ($form_state['values']['type_login'] == 'Email' && !empty($form_state['values']['email'])) {
+    $sql = "SELECT name FROM users u WHERE u.mail = '" . $form_state['values']['email'] . "'";
+    $result = db_query($sql);
+    
+    $matches = array();
+    foreach ($result->fetchAll() as $key => $item) {
+      $matches[0] = check_plain($item->name);
+    }
+    
+    if (!empty($matches[0])) {
+      form_set_value($form['name'], $matches[0], $form_state);
+      }
+  }
+  else if ($form_state['values']['type_login'] == 'Username') {
+    form_set_value($form['email'], "", $form_state);
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function train226_menu() {
+  $items['train226/multiform'] = array(
+    'title' => 'Multi Step Form',
+    'description' => 'Train 226 multi step form',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('form_train226_multistep'),
+    'access callback' => TRUE,
+  );
+  
+  return $items;
+}
+
+function form_train226_multistep($form, &$form_state) {
+  if (!empty($form_state['page_num']) && $form_state['page_num'] == 2) {
+    return form_train226_multistep_formtwo($form, $form_state);
+  }
+  
+  $form['name'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Fullname',
+  );
+  
+  $form['name']['firstname'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Firstname',
+    '#description' => 'Enter your firstname',
+    '#size' => 60,
+    '#maxlength' => 60,
+    '#required' => TRUE,
+    '#default_value' => !empty($form_state['values']['firstname']) ? $form_state['values']['firstname'] : '',
+  );
+  
+  $form['name']['lastname'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Lastname',
+    '#description' => 'Enter your lastname',
+    '#size' => 60,
+    '#maxlength' => 60,
+    '#required' => TRUE,
+    '#default_value' => !empty($form_state['values']['lastname']) ? $form_state['values']['lastname'] : '',
+  );
+  
+  $form['next'] = array(
+    '#type' => 'submit',
+    '#value' => 'Next',
+    '#submit' => array('form_train226_multistep_formtwo_submit'),
+  );
+  
+  return $form;
+}
+
+function form_train226_multistep_formtwo($form, &$form_state) {
+  $form['career'] = array(
+    '#type' => 'select',
+    '#title' => 'Career',
+    '#description' => 'Choose your career',
+    '#options' => drupal_map_assoc(array(t('Developer'), t('Student'), t('Teacher'), t('Other'))),
+    '#default_value' => !empty($form_state['values']['career']) ? $form_state['values']['career'] : 'Developer',
+  );
+  
+  $form['other'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Other',
+    '#description' => 'Enter your career',
+    '#size' => 60,
+    '#maxlength' => 60,
+    '#default_value' => !empty($form_state['values']['other']) ? $form_state['values']['other'] : '',
+    '#states' => array(
+      'visible' => array(
+        'select[name="career"]' => array('value' => 'Other'),
+      ),
+    ),
+  );
+  
+  $form['back'] = array(
+    '#type' => 'submit',
+    '#value' => 'Back',
+    '#submit' => array('form_train226_multistep_back'),
+  );
+  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
+  );
+  
+  return $form;
+}
+
+
+function form_train226_multistep_formtwo_submit($form, &$form_state) {
+  $form_state['page_values'][1] = $form_state['values'];
+  
+  if (!empty($form_state['page_values'][2])) {
+    $form_state['values'] = $form_state['page_values'][2];
+  }
+  
+  $form_state['page_num'] = 2;
+  $form_state['rebuild'] = TRUE;
+}
+
+function form_train226_multistep_back($form, &$form_state) {
+  if ($form_state['values']['career'] != 'Other') {
+    $form_state['values']['other'] = '';
+  }
+  
+  $form_state['page_values'][2] = $form_state['values'];
+  
+  if (!empty($form_state['page_values'][1])) {
+    $form_state['values'] = $form_state['page_values'][1];
+  }
+  
+  $form_state['page_num'] = 1;
+  $form_state['rebuild'] = TRUE;
+  
+}
+
+function form_train226_multistep_submit($form, &$form_state) {
+  $message = "Your first name = " . $form_state['page_values'][1]['firstname'] . 
+      " \nYour last name = " . $form_state['page_values'][1]['lastname'];
+  if ($form_state['values']['career'] != 'Other') {
+    $message = $message . " \nYour career = " . $form_state['values']['career'];
+  } else {
+    $message = $message . " \nYour career = " . $form_state['values']['other'];
+  }
+  
+  drupal_set_message($message);
+}

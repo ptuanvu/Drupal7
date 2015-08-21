@@ -1,0 +1,5 @@
+name="Mongooses"
+description="Demo module to show how to expose a fictional 'mongooses' table to Views"
+core=7.x
+package="Mongooses"
+files[] = mongooses.module
