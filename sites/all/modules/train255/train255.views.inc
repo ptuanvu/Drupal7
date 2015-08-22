@@ -29,7 +29,7 @@ function train255_views_plugins()
         'title' => t('Subscription data export'),
         'help' => t('Export the view results to a file. Can handle very large result sets.'),
         'path' => $path . '/plugins',
-        'handler' => 'subcription_data_export_plugin_display_export',
+        'handler' => 'subscription_data_export_plugin_display_export',
         'parent' => 'feed',
         'uses hook menu' => TRUE,
         'use ajax' => FALSE,

@@ -39,3 +39,13 @@ function export_data_subscription_rest_package()
   }
 
 }
+
+/**
+ * Implements hook_views_api().
+ */
+function train255_views_api()
+{
+  return array(
+    'api' => 3,
+  );
+}
