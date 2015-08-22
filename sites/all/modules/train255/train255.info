@@ -1,6 +1,0 @@
-name = Train 255 - Exporting data
-description = Trai 255 Export data and ...
-core = 7.x
-package = Trains
-
-files[] = plugins/subscription_data_export_plugin_display_export.inc
