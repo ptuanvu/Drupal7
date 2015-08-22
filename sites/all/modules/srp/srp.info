@@ -1,2 +1,12 @@
+name = SRP Export Module
+description = Subscription export module from REST service
+core = 7.x
+package = Trains
 
+files[] = theme/srp.theme.inc
+
+files[] = "srp.tpl.php"
+files[] = "srp-csv-body.tpl.php"
+files[] = "srp-csv-header.tpl.php"
+files[] = "srp-csv-footer.tpl.php"
 

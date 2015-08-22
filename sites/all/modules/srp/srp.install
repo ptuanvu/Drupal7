@@ -6,87 +6,88 @@
  * and open the template in the editor.
  */
 
-function srp_schema() {
-        $schema = array();
-       
-        $schema['srp_data_export_table'] = array(
-                'description' => t('Subscription Rest Package Expport Table'),
-                'fields' => array(
-                        'eid' => array(
-                                'description' => 'Unique id for each on-going export.',
-                                'type' => 'serial',
-                                'unsigned' => TRUE,
-                                'not null' => TRUE,
-                        ),
-                        'vid' => array(
-                                'description' => 'Views display id.',
-                                'type' => 'varchar',
-                                'length' => 64,
-                                'default' => '',
-                                'not null' => TRUE,
-                        ),
-                        'vname' => array(
-                                'description' => 'Views display name.',
-                                'type' => 'varchar',
-                                'length' => 128,
-                                'default' => '',
-                                'not null' => TRUE,
-                        ),
-                        'time_stamp' => array(
-                                'type' => 'int',
-                                'unsigned' => TRUE,
-                                'not null' => TRUE,
-                                'default' => 0,
-                                'description' => 'The time this export started',
-                        ),
-                        'fid' => array(
-                                'description' => 'Files ID.',
-                                'type' => 'int',
-                                'unsigned' => TRUE,
-                                'not null' => TRUE
-                        ),
-                        'batch_state' => array(
-                                'type' => 'varchar',
-                                'length' => '32',
-                                'default' => 'init',
-                                'not null' => TRUE,
-                                'description' => 'The current state of the batch.',
-                          ),
-                        'sandbox' => array(
-                                'type' => 'blob',
-                                'not null' => FALSE,
-                                'size' => 'big',
-                                'serialize' => TRUE,
-                        ),
-                ),
-                'primary key' => array('eid'),
-        );
-        $schema['srp_export_object_cache'] = array(
-                'description' => 'A modified version of the srp_object_cache that ignores session id.',
-                'fields' => array(
-                  'eid' => array(
-                        'type' => 'varchar',
-                        'length' => '64',
-                        'description' => 'The export ID this view equates too.',
-                  ),
-                  'updated' => array(
-                        'type' => 'int',
-                        'unsigned' => TRUE,
-                        'not null' => TRUE,
-                        'default' => 0,
-                        'description' => 'The time this cache was created or updated.',
-                  ),
-                  'data' => array(
-                        'type' => 'blob',
-                        'size' => 'big',
-                        'description' => 'Serialized data being stored.',
-                        'serialize' => TRUE,
-                  ),
-                ),
-                'indexes' => array(
-                  'eid' => array('eid'),
-                  'updated' => array('updated'),
-                ),
-        );
-        return $schema;
+function srp_schema()
+{
+  $schema = array();
+
+  $schema['srp_data_export_table'] = array(
+    'description' => t('Subscription Rest Package Expport Table'),
+    'fields' => array(
+      'eid' => array(
+        'description' => 'Unique id for each on-going export.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'vid' => array(
+        'description' => 'Views display id.',
+        'type' => 'varchar',
+        'length' => 64,
+        'default' => '',
+        'not null' => TRUE,
+      ),
+      'vname' => array(
+        'description' => 'Views display name.',
+        'type' => 'varchar',
+        'length' => 128,
+        'default' => '',
+        'not null' => TRUE,
+      ),
+      'time_stamp' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The time this export started',
+      ),
+      'fid' => array(
+        'description' => 'Files ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'batch_state' => array(
+        'type' => 'varchar',
+        'length' => '32',
+        'default' => 'init',
+        'not null' => TRUE,
+        'description' => 'The current state of the batch.',
+      ),
+      'sandbox' => array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+      ),
+    ),
+    'primary key' => array('eid'),
+  );
+  $schema['srp_export_object_cache'] = array(
+    'description' => 'A modified version of the srp_object_cache that ignores session id.',
+    'fields' => array(
+      'eid' => array(
+        'type' => 'varchar',
+        'length' => '64',
+        'description' => 'The export ID this view equates too.',
+      ),
+      'updated' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The time this cache was created or updated.',
+      ),
+      'data' => array(
+        'type' => 'blob',
+        'size' => 'big',
+        'description' => 'Serialized data being stored.',
+        'serialize' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'eid' => array('eid'),
+      'updated' => array('updated'),
+    ),
+  );
+  return $schema;
 }
