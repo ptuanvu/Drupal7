@@ -8,3 +8,41 @@ function srp_views_api() {
     'api' => 3,
   );
 }
+
+/**
+ * Implementation of hook_theme().
+ */
+function srp_theme() {
+  // Make sure that views picks up the preprocess functions.
+  module_load_include('inc', 'srp', 'theme/srp.theme');
+  $hooks = array();
+  $hooks['srp_feed_icon'] = array(
+    'pattern' => 'srp_feed_icon__',
+    'variables' => array(
+      'image_path' => NULL,
+      'url' => NULL,
+      'query' => '',
+      'text' => '',
+    ),
+    'file' => 'theme/srp.theme.inc',
+  );
+
+  $hooks['srp_complete_page'] = array (
+    'variables' => array(
+      'file' => '',
+      'errors' => array(),
+      'return_url'=> '',
+    ),
+    'file' => 'theme/srp.theme.inc',
+  );
+
+  $hooks['srp_message'] = array (
+    'variables' => array(
+      'message' => '',
+      'type' => 'info',
+    ),
+    'file' => 'theme/srp.theme.inc',
+  );
+
+  return $hooks;
+}
