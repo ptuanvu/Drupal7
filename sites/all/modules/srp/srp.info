@@ -4,9 +4,8 @@ core = 7.x
 package = Trains
 
 files[] = theme/srp.theme.inc
+files[] = plugins/srp_plugin_display_export.inc
+files[] = plugins/srp_plugin_style_export.inc
+files[] = plugins/srp_plugin_style_export_csv.inc
 
-files[] = "srp.tpl.php"
-files[] = "srp-csv-body.tpl.php"
-files[] = "srp-csv-header.tpl.php"
-files[] = "srp-csv-footer.tpl.php"
 

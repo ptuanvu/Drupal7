@@ -10,7 +10,7 @@
 /**
  * Implementation of hook_views_plugins().
  */
-function views_data_export_views_plugins() {
+function srp_views_plugins() {
   $path = drupal_get_path('module', 'srp');
 
   $style_defaults = array(
@@ -28,7 +28,7 @@ function views_data_export_views_plugins() {
   return array(
     'display' => array (
       'srp' => array(
-        'title' => t('Data export'),
+        'title' => t('SRP Data export'),
         'help' => t('Export the view results to a file. Can handle very large result sets.'),
         'path' => $path . '/plugins',
         'handler' => 'srp_plugin_display_export',
@@ -70,6 +70,6 @@ function views_data_export_views_plugins() {
         ),
         'additional themes base' => 'srp_csv',
       ) + $style_defaults,
-    )
+    ),
   );
 }
