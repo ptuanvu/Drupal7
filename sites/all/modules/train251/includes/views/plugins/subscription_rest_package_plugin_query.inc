@@ -149,8 +149,8 @@ class subscription_rest_package_plugin_query extends views_plugin_query {
         $limit  = intval(!empty($this->limit) ? $this->limit : 999999);
         $offset = intval(!empty($this->offset) ? $this->offset : 0);
 
-        if ($this->offset != 0 && $this->limit != 999999) {
-          $filters['page_number'] = $this->offset/$this->limit + 1;
+        if ($this->offset != 0 && $limit != 999999) {
+          $filters['page_number'] = $this->offset/$limit + 1;
         }
 
         if ($limit < 999999)
@@ -175,7 +175,18 @@ class subscription_rest_package_plugin_query extends views_plugin_query {
     // Let the pager modify the query to add limits.
     $this->pager->query();
 
+    $data = array();
+    if (!empty($this->where)) {
+      foreach ($this->where as $key => $item) {
+        if (!empty($item['conditions']['0']['value'])) {
+          $data[$item['conditions']['0']['field']] = $item['conditions']['0']['value'];
+        }
+      }
+    }
+
+
     $view->build_info['query'] = $this->query();
+    $view->build_info['arguments'] = $data;
     $view->build_info['count_query'] = $this->query(TRUE);
   }
 
@@ -206,7 +217,7 @@ class subscription_rest_package_plugin_query extends views_plugin_query {
 
     $view->total_rows = $json_output['total'];
     $view->current_page = isset($filter['page_number']) ? (int) $filter['page_number'] : 1;
-    $view->items_per_page = (int) $filter['page_size'];
+    $view->items_per_page = isset($filter['page_size']) ? (int) $filter['page_size'] : 5;
     empty($filter['period_id_merge']) ?: $view->period_id_merge = $filter['period_id_merge'];
     $this->pager->total_items = $json_output['total'];
     $this->pager->update_page_info();

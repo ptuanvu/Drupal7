@@ -1,5 +1,12 @@
 <?php
 
+define('SRP_HEADER', 'header');
+define('SRP_BODY', 'body');
+define('SRP_FOOTER', 'footer');
+define('SRP_FINISHED', 'finished');
+
+define('SRP_INDEX_TABLE_PREFIX', 'srp_index_');
+
 /**
  * Implementation of hook_views_api().
  */
@@ -45,4 +52,95 @@ function srp_theme() {
   );
 
   return $hooks;
+}
+
+function srp_new($view_name, $view_display_id, $file) {
+  $record = (object) array(
+    'view_name' => $view_name,
+    'view_display_id' => $view_display_id,
+    'time_stamp' => REQUEST_TIME,
+    'fid' => $file,
+    'batch_state' => SRP_HEADER,
+    'sandbox' => array(),
+  );
+  drupal_write_record('srp_data_export_table', $record);
+  return $record;
+}
+
+function srp_get($export_id) {
+  $object = db_query("SELECT * FROM {srp_data_export_table} WHERE eid = :eid", array(':eid' => (int)$export_id))->fetch();
+  if ($object) {
+    $object->sandbox = unserialize($object->sandbox);
+  }
+  return $object;
+}
+
+function srp_update($state) {
+  drupal_write_record('srp_data_export_table', $state, 'eid');
+}
+
+function srp_clear($export_id) {
+  db_delete('srp_data_export_table')
+    ->condition('eid', $export_id)
+    ->execute();
+  srp_view_clear($export_id);
+}
+
+function srp_view_clear($export_id = NULL) {
+  if (!empty($export_id)) {
+    db_delete('srp_export_object_cache')
+      ->condition('eid', $export_id)
+      ->execute();
+  } else {
+    db_delete('srp_export_object_cache')
+      ->execute();
+  }
+
+}
+
+function srp_view_store($export_id, $view) {
+  $_view = $view->clone_view();
+
+  srp_view_clear($export_id);
+  $record = array(
+    'eid' => $export_id,
+    'data' => $_view,
+    'updated' => REQUEST_TIME,
+  );
+  drupal_write_record('srp_export_object_cache', $record);
+}
+
+function srp_view_retrieve($export_id) {
+  views_include('view');
+  $data = db_query("SELECT * FROM {srp_export_object_cache} WHERE eid = :eid", array(':eid' => $export_id))->fetch();
+  if ($data) {
+    $view = unserialize($data->data);
+  }
+  return $view;
+}
+
+function _srp_batch_process($export_id, $display_id, $exposed_input, &$context) {
+  if (module_exists('admin_menu')) {
+    module_invoke('admin_menu', 'suppress');
+  }
+
+  $view = srp_view_retrieve($export_id);
+  $view->set_display($display_id);
+  if (!empty($exposed_input)) {
+    $view->set_exposed_input($exposed_input);
+  }
+
+  if (!isset($view->display_handler->batched_execution_state)) {
+    $view->display_handler->batched_execution_state = new stdClass();
+  }
+  $view->display_handler->batched_execution_state->eid = $export_id;
+  $view->display_handler->srp_cached_view_loaded = TRUE;
+  $view->execute_display($display_id);
+
+  // Update batch api progress information
+  $sandbox = $view->display_handler->batched_execution_state->sandbox;
+  $context['finished'] = $sandbox['finished'];
+  $context['message'] = $sandbox['message'];
+
+  srp_view_store($export_id, $view);
 }
