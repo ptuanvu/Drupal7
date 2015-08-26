@@ -1,0 +1,6 @@
+name = Train255 _ Batch
+description = Train 255 Export Data
+core = 7.x
+package = Trains
+
+files[] = plugins/train255_plugin_display_export.inc

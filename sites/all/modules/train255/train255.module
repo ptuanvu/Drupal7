@@ -1,0 +1,16 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: monster
+ * Date: 26/08/2015
+ * Time: 09:20
+ */
+/**
+ * Implements hook_views_api().
+ */
+function train255_views_api()
+{
+  return array(
+    'api' => 3,
+  );
+}

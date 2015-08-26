@@ -91,7 +91,42 @@ function train251_menu()
 
   return $items;
 }
-
+//
+///**
+// * Implements hook_action_info().
+// */
+//function train251_action_info()
+//{
+//  return array(
+//    'srp_change_status_action' => array(
+//      'type' => 'subscription_rest_package',
+//      'description' => t(' Change Status SRP'),
+//      'configurable' => FALSE,
+//      'hooks' => array(
+//        'any' => TRUE,
+//      ),
+//      'aggregate' => FALSE,
+//    )
+//  );
+//}
+//
+///**
+// * Implements hook_views_bulk_operations_object_info
+// */
+//function train251_views_bulk_operations_object_info() {
+//  return array(
+//    'subscription_rest_package' => array(
+//      'type' => 'subscription_rest_package',
+//      'load' => 'subscription_rest_package_load',
+//      'title' => t('Subscription Rest Package'),
+//    ),
+//  );
+//}
+//
+//function srp_change_status_action(&$object, $context = array()) {
+//  dsm($object);
+//  dsm($context);
+//}
 
 function subscription_rest_package_list_entities() {
   $content = array();
