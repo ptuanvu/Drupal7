@@ -8,6 +8,7 @@ function train251_views_data()
 
   //Base table
   $data['subscription_rest_package']['table']['group'] = t('Subscription Rest Package Groups');
+  $data['subscription_rest_package']['table']['entity type'] = 'subscription_rest_package';
   $data['subscription_rest_package']['table']['base'] = array(
     'title' => t('Subscription Rest Package Group'),
     'help' => t('Query Subscription Rest Package Groups.'),

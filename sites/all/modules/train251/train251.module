@@ -91,42 +91,6 @@ function train251_menu()
 
   return $items;
 }
-//
-///**
-// * Implements hook_action_info().
-// */
-//function train251_action_info()
-//{
-//  return array(
-//    'srp_change_status_action' => array(
-//      'type' => 'subscription_rest_package',
-//      'description' => t(' Change Status SRP'),
-//      'configurable' => FALSE,
-//      'hooks' => array(
-//        'any' => TRUE,
-//      ),
-//      'aggregate' => FALSE,
-//    )
-//  );
-//}
-//
-///**
-// * Implements hook_views_bulk_operations_object_info
-// */
-//function train251_views_bulk_operations_object_info() {
-//  return array(
-//    'subscription_rest_package' => array(
-//      'type' => 'subscription_rest_package',
-//      'load' => 'subscription_rest_package_load',
-//      'title' => t('Subscription Rest Package'),
-//    ),
-//  );
-//}
-//
-//function srp_change_status_action(&$object, $context = array()) {
-//  dsm($object);
-//  dsm($context);
-//}
 
 function subscription_rest_package_list_entities() {
   $content = array();
@@ -589,6 +553,9 @@ class SubscriptionRestPackageController extends EntityAPIController implements S
         if ($respone->code == 200) {
           $result = json_decode($respone->data);
         }
+        foreach ($result->list as $row) {
+          $queried_entities[$row->id] = $row;
+        }
       } else {
         foreach ($ids as $id) {
           $filter = array('id' => $id,);
@@ -604,12 +571,14 @@ class SubscriptionRestPackageController extends EntityAPIController implements S
             if (isset($entities[$result->list[0]->{$this->idKey}])) {
               continue;
             }
+
+            foreach ($result->list as $row) {
+              $queried_entities[$row->id] = $row;
+            }
           }
         }
       }
-      foreach ($result->list as $row) {
-        $queried_entities[$row->id] = $row;
-      }
+
     }
 
     if (!empty($queried_entities)) {
@@ -647,9 +616,15 @@ class SubscriptionRestPackageController extends EntityAPIController implements S
   {
     $result = array();
 
+    if (!is_array($entity->telco)) {
+      $entity->telco = array($entity->telco);
+    }
     foreach ($entity->telco as $key => $item) {
       if ($item != '0') {
         $row = array();
+        if (!empty($entity->id)) {
+          $row['id'] = $entity->id;
+        }
         switch ($item) {
           case 'Viettel' :
             $row['telco'] = 'VTEL';
@@ -660,21 +635,23 @@ class SubscriptionRestPackageController extends EntityAPIController implements S
           case 'Vinaphone' :
             $row['telco'] = 'VINA';
             break;
+          default:
+            $row['telco'] = $item;
+            break;
         }
 
         if (!empty($entity->id)) {
-          $row['id'] = $entity->id;
           $row['name'] = $entity->name;
           $row['code'] = $entity->code;
+          $row['amount'] = $entity->amount;
           $row['sms_code'] = $entity->sms_code;
         } else {
           $row['name'] = $entity->name . ' ' . $item;
           $row['code'] = $row['telco'] . $entity->code;
-
+          $row['amount'] = $entity->amount . '000';
           $row['sms_code'] = $row['telco'] . ' ' . $entity->sms_code;
         }
 
-        $row['amount'] = $entity->amount . '000';
         $row['month'] = $entity->month;
         $row['status'] = $entity->status;
         $result[] = $row;

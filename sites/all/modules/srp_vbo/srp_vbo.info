@@ -1,0 +1,4 @@
+name = SRP VBO
+description = Subscription Rest Package Views Bulk Operations
+core = 7.x
+package = Trains
