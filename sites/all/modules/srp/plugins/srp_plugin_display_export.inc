@@ -497,6 +497,18 @@ class srp_plugin_display_export extends views_plugin_display_feed {
     return $alias;
   }
 
+  function generate_value($value, $fields) {
+    $row = array();
+    foreach ($fields as $key => $item) {
+      if (isset($value[$key])) {
+        $row[$key] = $value[$key];
+      }
+    }
+
+    return $row;
+  }
+
+
 }
 
 
@@ -508,34 +520,32 @@ class srp_plugin_query_rest_batched extends  subscription_rest_package_plugin_qu
     $query = $view->build_info['query'];
     $count_query = $view->build_info['count_query'];
 
-
-    $items = array();
+    $data_infomations = array(
+      'id' => 'bigint(20)',
+      'code' => 'varchar(50)',
+      'name' => 'varchar(255)',
+      'amount' => 'varchar(255)',
+      'month' => 'int(11)',
+      'telco' => 'varchar(255)',
+      'status' => 'varchar(50)',
+      'sms_code' => 'varchar(50)',
+      'created_at' => 'varchar(50)',
+      'updated_at' => 'varchar(50)',
+    );
 
     if ($query) {
       $view->init_pager();
       $this->pager->query();
-
       $start = microtime(TRUE);
       try {
-        // The $query is final and ready to go, we are going to redirect it to
-        // become an insert into our table, sneaky!
-        // Our query will look like:
-        // CREATE TABLE {idx} SELECT @row := @row + 1 AS weight_alias, cl.* FROM
-        // (-query-) AS cl, (SELECT @row := 0) AS r
-        // We do some magic to get the row count.
-
         $display_handler->batched_execution_state->sandbox['weight_field_alias'] = $display_handler->_weight_alias_create($view);
-
         $display_handler->batched_execution_state->sandbox['field_aliases'] = $display_handler->field_aliases_create($view);
         $select_aliases = array();
         foreach ($display_handler->batched_execution_state->sandbox['field_aliases'] as $hash => $alias) {
           $select_aliases[] = "cl.$alias AS $hash";
         }
-
         $url = 'http://localhost:8181/subscription-rest/package/search';
         $headers = array();
-
-
         $filter = $query;
 
         $options = array(
@@ -543,68 +553,30 @@ class srp_plugin_query_rest_batched extends  subscription_rest_package_plugin_qu
           'data' => !empty($filter) ? json_encode($filter) : '{}',
           'headers' => $headers,
         );
-        $result = array();
         $respone = drupal_http_request($url, $options);
         $json_output = json_decode($respone->data, true);
 
+        $sql2 = 'CREATE TABLE ' . $display_handler->index_tablename() . '( vde_weight BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,';
+        $fields = $view->query->fields;
+        foreach ($fields as $key_name => $value_item) {
+          $sql2 .= $key_name . ' ' . $data_infomations[$key_name] . ',';
+        }
+        $sql2 = substr($sql2, 0, -1);
+        $sql2 .= ') ENGINE=InnoDB AUTO_INCREMENT=1700 DEFAULT CHARSET=utf8';
 
-        $sql = 'CREATE TABLE ' . $display_handler->index_tablename() . '(
-        vde_weight BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        id bigint(20),
-        code varchar(50),
-        name varchar(255),
-        amount varchar(255),
-        month int(11),
-        telco varchar(255),
-        status varchar(50),
-        sms_code varchar(50),
-        created_at varchar(50),
-        updated_at varchar(50)
-        ) ENGINE=InnoDB AUTO_INCREMENT=1700 DEFAULT CHARSET=utf8';
-
-        db_query($sql);
-        $args = $view->build_info['arguments'];
-        $insert_query = "INSERT INTO " . $display_handler->index_tablename() . " (id, code, name, amount, month, telco, status, sms_code, created_at, updated_at) VALUES ";
-//        $insert_query = "INSERT INTO " . $display_handler->index_tablename() . " (id, code, name, amount, month, telco, status, sms_code, created_at, updated_at) VALUES (%d, %s, %s, %s, %d, %s, %s, %s, %s, %s)";
-//        $insert_query = 'CREATE TABLE {' . $display_handler->index_tablename() . '} SELECT @row := @row + 1 AS ' . $display_handler->batched_execution_state->sandbox['weight_field_alias'] . ', ' . implode(', ', $select_aliases) . ' FROM (' . (string)$query . ') AS cl, (SELECT @row := 0) AS r';
-//        db_query($insert_query, $args);
-
-//        mysql_query("SET NAMES utf8");
+        db_query($sql2);
         foreach($json_output['list'] as $key => $item) {
-//          $insert_query2 = $insert_query . "('" . $item['id'] . "', '" . $item['code'] . "', '" . $item['name'] . "', '" . $item['amount'] . "', '" . $item['month'] . "', '" . $item['telco'] . "', '" . $item['status'] . "', '" . $item['sms_code'] . "', '" . $item['created_at'] . "', '" . $item['updated_at'] . "')";
-//          db_query($insert_query2);
-//          db_query($insert_query, array((int)$item['id'], $item['code'], $item['name'], $item['amount'], $item['month'], $item['telco'], $item['status'], $item['sms_code'], $item['created_at'], $item['updated_at']));
+          $row_value = $display_handler->generate_value($item, $fields);
           db_insert($display_handler->index_tablename())
-            ->fields(array(
-              'id' => $item['id'],
-              'code' => $item['code'],
-              'name' => $item['name'],
-              'amount' => $item['amount'],
-              'month' => $item['month'],
-              'telco' => $item['telco'],
-              'status' => $item['status'],
-              'sms_code' => $item['sms_code'],
-              'created_at' => $item['created_at'],
-              'updated_at' => isset($item['updated_at']) ? $item['updated_at'] : ''
-            ))
+            ->fields($row_value)
             ->execute();
         }
-
-//        $insert_query = substr($insert_query, 0 , -1);
-
-
         $view->result = array();
-
         $this->pager->post_execute($view->result);
-
         if ($this->pager->use_pager()) {
           $view->total_rows = $this->pager->get_total_items();
         }
-
-        // Now create an index for the weight field, otherwise the queries on the
-        // index will take a long time to execute.
         db_add_unique_key($display_handler->index_tablename(), $display_handler->batched_execution_state->sandbox['weight_field_alias'], array($display_handler->batched_execution_state->sandbox['weight_field_alias']));
-
       }
       catch (Exception $e) {
         $view->result = array();
