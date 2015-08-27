@@ -507,8 +507,6 @@ class srp_plugin_display_export extends views_plugin_display_feed {
 
     return $row;
   }
-
-
 }
 
 

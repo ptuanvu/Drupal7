@@ -75,6 +75,21 @@ function srp_get($export_id) {
   return $object;
 }
 
+/**
+ * Implements hook_cron().
+ */
+function srp_cron()
+{
+  $sql = 'SHOW TABLES';
+  $result = db_query($sql);
+  foreach($result->fetchAll() as $item) {
+    if (strpos($item->Tables_in_dp, 'srp_index_') != FALSE) {
+      $sql2 = 'DROP TABLE ' . $item->Tables_in_dp;
+      db_query($sql2);
+    }
+  }
+}
+
 function srp_update($state) {
   drupal_write_record('srp_data_export_table', $state, 'eid');
 }
