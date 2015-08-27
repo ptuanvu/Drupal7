@@ -109,7 +109,7 @@ function srp_vbo_change_amount_submit($form, $form_state) {
 
 function srp_vbo_change_amount(&$object, $context = array()) {
   drupal_set_message(t('SRP name %name has been changed amount to %amount 000', array('%name' => $object->name, '%amount' => $context['amount'])));
-  $object->amount = $context['amount'] . '000';
+  $object->amount = (int)$context['amount'] . '000';
 }
 
 class srp_vbo_handler_field_operations extends views_bulk_operations_handler_field_operations {

@@ -1,0 +1,136 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: monster
+ * Date: 26/08/2015
+ * Time: 16:58
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function leek_menu()
+{
+  $items = array();
+
+  $items['leek/zingmp3'] = array(
+    'label' => 'Zing MP3 Downloader',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('zingmp3_download'),
+    'access callback' => TRUE,
+  );
+
+  return $items;
+}
+
+function zingmp3_download($form, $form_state) {
+  $form['link'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Link',
+    '#required' => TRUE,
+    '#description' => 'Enter your album link here',
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Download',
+  );
+
+  return $form;
+}
+
+function zingmp3_download_submit($form, &$form_state) {
+  $link = $form_state['values']['link'];
+  $coookie = "zsid=nZP-.106083373.20.B4wVdSO-csZhYibknZwRQ6t3ighbSVkWnr05i9DQcs36FfjUz0YlM_uBhcN6GPje";
+
+//  $header = a?drupal_http_request($link,$options);
+//  $data = gzdecode($content->data, $content->headers['content-length']);
+//  $data = gzinflate($content->data, $content->headers['content-length']);
+//  print $data;
+
+  $ch = curl_init();
+  curl_setopt($ch, CURLOPT_URL, $link);
+  curl_setopt($ch,CURLOPT_ENCODING , "");
+  curl_setopt($ch, CURLOPT_HEADER, false);
+  curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+  curl_setopt($ch, CURLOPT_COOKIE, $coookie);
+  $a = curl_exec($ch);
+  $url = strpos($a, 'data-xml');
+  $u = '';
+  $dem = 0;
+  for($i = $url; ; $i++) {
+    if ($dem == 2) {
+      break;
+    }
+    if ($dem == 1) {
+      $u .= $a[$i];
+    }
+    if ($a[$i] == '"') {
+      $dem ++;
+    }
+  }
+
+  drupal_set_message($u);
+}
+//
+//function parse_link($code){
+//  global $coookie;
+//  $ch = curl_init();
+//  curl_setopt($ch, CURLOPT_URL, "http://mp3.zing.vn/xhr/song/get-download?panel=.fn-tab-panel-service&code=".$code."&group=.fn-tab-panel");
+//  curl_setopt($ch,CURLOPT_ENCODING , "");
+//  curl_setopt($ch, CURLOPT_HEADER, false);
+//  curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+//  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+//  curl_setopt($ch, CURLOPT_COOKIE, $coookie);
+//  $a = curl_exec($ch);
+//
+//  $result = json_decode($a,true);
+//
+//  $result = $result['data']['lossless']['link'];
+//
+//  $result = "http://mp3.zing.vn".$result;
+//
+//  $link = get_redirected_link($result);
+//  return $link;
+//
+//}
+//
+//function remove_cdata($xml)
+//{
+//
+//  $new_xml = NULL;
+//  preg_match_all("/\<\!\[CDATA \[(.*)\]\]\>/U", $xml, $args);
+//
+//  if (is_array($args)) {
+//    if (isset($args[0]) && isset($args[1])) {
+//      $new_xml = $xml;
+//      for ($i=0; $i<count($args[0]); $i++) {
+//        $old_text = $args[0][$i];
+//        $new_text = htmlspecialchars($args[1][$i]);
+//        $new_xml = str_replace($old_text, $new_text, $new_xml);
+//      }
+//    }
+//  }
+//
+//  return $new_xml;
+//
+//
+//}
+//
+//$coookie = "zsid=nZP-.106083373.20.B4wVdSO-csZhYibknZwRQ6t3ighbSVkWnr05i9DQcs36FfjUz0YlM_uBhcN6GPje";
+//error_reporting(0);
+//function get_container($url,$type=0)
+//{
+//  global $coookie;
+//  $ch = curl_init();
+//  curl_setopt($ch, CURLOPT_URL, $url);
+//  if($type == 0)
+//    curl_setopt($ch,CURLOPT_ENCODING , "");
+//  else curl_setopt($ch,CURLOPT_ENCODING , "gzip");
+//  curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+//  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+//  $a = curl_exec($ch);
+//  return $a;
+//
+//}
